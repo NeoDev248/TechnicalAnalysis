@@ -1,0 +1,5 @@
+NVDA
+JPM
+KO
+DIS
+NFLX

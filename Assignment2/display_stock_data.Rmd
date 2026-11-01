@@ -1,0 +1,70 @@
+---
+title: "Technical Analysis: Preliminary Stage"
+author: "Jaskaran Singh"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4)
+```
+
+# Purpose
+
+This document imports the stocks listed in `portfolio.txt`, calculates the moving average, mean, mode, median and standard deviation of each stock's closing price, and displays the data in tables and charts. The functions are in `stock_functions.R` and `stock_display.R`.
+
+# 1. Load packages and functions
+
+```{r packages}
+source("stock_functions.R")
+setup_packages()          # installs quantmod, TTR, ggplot2 if missing
+source("stock_display.R")
+```
+
+# 2. Portfolio
+
+```{r portfolio}
+get_symbols_from_file("portfolio.txt")
+```
+
+# 3. Import the data
+
+```{r load}
+stocks <- load_stock_data("portfolio.txt", from = "2024-01-01")
+sapply(stocks, nrow)
+```
+
+# 4. Display the data
+
+```{r display}
+show_all(stocks, rows = 5)
+```
+
+# 5. Statistics
+
+Statistics use the daily **Close** price and a 20-day simple moving average.
+
+```{r stats}
+res <- calculate_all_statistics(stocks, window = 20)
+knitr::kable(res$table, digits = 2, caption = "Summary statistics by stock")
+```
+
+# 6. Charts
+
+```{r ma-charts}
+for (s in names(stocks)) print(chart_ma(res$by_stock[[s]]$ma, s, 20))
+```
+
+```{r volume-charts}
+for (s in names(stocks)) print(chart_volume(stocks[[s]], s))
+```
+
+```{r compare-charts}
+chart_compare(stocks)
+chart_stats(res$table)
+```
+
+# Notes
+
+- Data comes from Yahoo Finance through `quantmod::getSymbols()`, so an internet connection is needed.
+- Closing prices rarely repeat exactly, so the mode is calculated after rounding to 2 decimals and is not very meaningful for continuous prices.
